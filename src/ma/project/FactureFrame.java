@@ -22,6 +22,7 @@ public class FactureFrame extends JFrame {
     private HashMap<String, Produit> produits = new HashMap<>();
     private int numeroFacture = 0;
     private JLabel lblClient;
+    
     private JLabel lblTotal;
     
 
@@ -153,6 +154,7 @@ public class FactureFrame extends JFrame {
         txtRefProduit.requestFocus();
     }
 
+    
     private void genererPDFSimple() {
         JOptionPane.showMessageDialog(this,
             "FACTURE GÉNÉRÉE !\n\n" +
