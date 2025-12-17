@@ -2,16 +2,18 @@ package ma.project;
 
 import javax.swing.*;
 import java.awt.*;
-import Facture;
 
 public class DashboardFrame extends JFrame {
 
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+    private RSAUtil rsa;  // ← la clé RSA dérivée du mot de passe
 
-	public DashboardFrame() {
+    // Constructeur qui reçoit la clé RSA
+    public DashboardFrame(RSAUtil rsa) {
+        this.rsa = rsa;  // ← on stocke la clé pour l'utiliser plus tard (chiffrement données)
+        initUI();
+    }
+
+    private void initUI() {
         setTitle("StockSecure - Tableau de bord");
         setSize(900, 600);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -21,49 +23,40 @@ public class DashboardFrame extends JFrame {
         getContentPane().setBackground(new Color(245, 245, 245));
 
         // Titre principal
-        JLabel title = new JLabel("StockSecureStock - Gestion Entreprise");
+        JLabel title = new JLabel("StockSecure - Gestion Entreprise");
         title.setBounds(0, 20, 900, 60);
         title.setFont(new Font("Arial", Font.BOLD, 28));
         title.setHorizontalAlignment(SwingConstants.CENTER);
         title.setForeground(new Color(0, 80, 160));
         add(title);
 
-        // Boutons
-        JButton btnClients     = createButton("Gestion Clients",          100, 120);
-        JButton btnProduits    = createButton("Gestion Produits",         100, 200);
-        JButton btnFactures    = createButton("Nouvelle Facture",         100, 280);
-        JButton btnStock       = createButton("État du Stock",            100, 360);
-        JButton btnAttaques    = createButton("Démonstration Attaques Crypto", 500, 120);
-        JButton btnDeconnexion = createButton("Déconnexion",              500, 360);
+        // Boutons (gauche)
+        JButton btnClients = createButton("Gestion Clients", 100, 120);
+        JButton btnProduits = createButton("Gestion Produits", 100, 200);
+        JButton btnFactures = createButton("Nouvelle Facture", 100, 280);
+        JButton btnStock = createButton("État du Stock", 100, 360);
 
-        // Actions des boutons
-        btnClients.addActionListener(e -> 
-            JOptionPane.showMessageDialog(this, "Module Clients - Bientôt disponible"));
+        // Boutons (droite)
+        JButton btnAttaques = createButton("Démonstration Attaques Crypto", 500, 120);
+        JButton btnDeconnexion = createButton("Déconnexion", 500, 360);
 
-        btnProduits.addActionListener(e -> 
-            JOptionPane.showMessageDialog(this, "Module Produits - Bientôt disponible"));
-
-        btnFactures.addActionListener(e -> new FactureFrame());
-
-        btnStock.addActionListener(e -> 
-            JOptionPane.showMessageDialog(this, "État du stock affiché"));
-
-        btnAttaques.addActionListener(e -> 
-            JOptionPane.showMessageDialog(this,
-                "Démonstration des attaques Coppersmith & Boneh-Durfee\n" +
-                "sur RSA 4096-bits implémenté depuis zéro en Java pur",
-                "Module Cryptographie Avancée",
-                JOptionPane.INFORMATION_MESSAGE));
-
+        // Actions
+        btnClients.addActionListener(e -> JOptionPane.showMessageDialog(this, "Module Clients - Bientôt disponible"));
+        btnProduits.addActionListener(e -> JOptionPane.showMessageDialog(this, "Module Produits - Bientôt disponible"));
+        btnFactures.addActionListener(e -> new FactureFrame(rsa));  // ← on passe la clé RSA à la facturation
+        btnStock.addActionListener(e -> JOptionPane.showMessageDialog(this, "État du stock affiché"));
+        btnAttaques.addActionListener(e -> JOptionPane.showMessageDialog(this, 
+            "Démonstration des attaques Coppersmith & Boneh-Durfee\n" +
+            "sur RSA 4096-bits implémenté depuis zéro en Java pur",
+            "Module Cryptographie Avancée", JOptionPane.INFORMATION_MESSAGE));
         btnDeconnexion.addActionListener(e -> {
-            dispose();           // ferme le dashboard
-            new LoginFrame();    // retourne à l'écran de connexion
+            dispose();
+            new LoginFrame();
         });
 
         setVisible(true);
     }
 
-    // Méthode qui crée un beau bouton
     private JButton createButton(String text, int x, int y) {
         JButton btn = new JButton(text);
         btn.setBounds(x, y, 300, 60);
