@@ -2,14 +2,7 @@ package ma.project;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.text.Document;
-import java.awt.image.BufferedImage;
-import javax.imageio.ImageIO;
-
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -17,10 +10,8 @@ import java.util.HashMap;
 public class FactureFrame extends JFrame {
 	private DefaultTableModel tableModel;
     private JTextField txtClientId, txtRefProduit, txtQuantite;
-    private JLabel lblClientNom, lblTotalTTC, lblNumFacture;
     private HashMap<String, String> clients = new HashMap<>();
     private HashMap<String, Produit> produits = new HashMap<>();
-    private int numeroFacture = 0;
     private JLabel lblClient;
     
     private JLabel lblTotal;
