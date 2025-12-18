@@ -220,7 +220,7 @@ public class FactureFrame extends JFrame {
         g.drawString("FACTURE OFFICIELLE", 150, 60);
 
         try {
-            BufferedImage logo = ImageIO.read(new File("logo.png"));
+            BufferedImage logo = ImageIO.read(new File("logo.JPEG"));
             g.drawImage(logo, 220, 80, 160, 160, null);
         } catch (Exception e) {
             g.setFont(new Font("Arial", Font.BOLD, 20));
