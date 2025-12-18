@@ -5,11 +5,7 @@ import java.awt.*;
 
 public class DashboardFrame extends JFrame {
 
-    private RSAUtil rsa;  // ← la clé RSA dérivée du mot de passe
-
-    // Constructeur qui reçoit la clé RSA
-    public DashboardFrame(RSAUtil rsa) {
-        this.rsa = rsa;  // ← on stocke la clé pour l'utiliser plus tard (chiffrement données)
+    public DashboardFrame() {
         initUI();
     }
 
@@ -30,25 +26,27 @@ public class DashboardFrame extends JFrame {
         title.setForeground(new Color(0, 80, 160));
         add(title);
 
-        // Boutons (gauche)
+        // Boutons gauche
         JButton btnClients = createButton("Gestion Clients", 100, 120);
         JButton btnProduits = createButton("Gestion Produits", 100, 200);
         JButton btnFactures = createButton("Nouvelle Facture", 100, 280);
         JButton btnStock = createButton("État du Stock", 100, 360);
 
-        // Boutons (droite)
+        // Boutons droite
         JButton btnAttaques = createButton("Démonstration Attaques Crypto", 500, 120);
         JButton btnDeconnexion = createButton("Déconnexion", 500, 360);
 
-        // Actions
-        btnClients.addActionListener(e -> JOptionPane.showMessageDialog(this, "Module Clients - Bientôt disponible"));
-        btnProduits.addActionListener(e -> JOptionPane.showMessageDialog(this, "Module Produits - Bientôt disponible"));
-        btnFactures.addActionListener(e -> new FactureFrame(rsa));  // ← on passe la clé RSA à la facturation
-        btnStock.addActionListener(e -> JOptionPane.showMessageDialog(this, "État du stock affiché"));
+        // Liaisons
+        btnClients.addActionListener(e -> new GestionClientsFrame());
+        btnProduits.addActionListener(e -> new GestionProduitsFrame());
+        btnFactures.addActionListener(e -> new FactureFrame());
+        btnStock.addActionListener(e -> new EtatStockFrame());
         btnAttaques.addActionListener(e -> JOptionPane.showMessageDialog(this, 
             "Démonstration des attaques Coppersmith & Boneh-Durfee\n" +
             "sur RSA 4096-bits implémenté depuis zéro en Java pur",
             "Module Cryptographie Avancée", JOptionPane.INFORMATION_MESSAGE));
+        
+        // Déconnexion retourne au Login
         btnDeconnexion.addActionListener(e -> {
             dispose();
             new LoginFrame();

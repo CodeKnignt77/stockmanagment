@@ -19,38 +19,34 @@ public class FactureFrame extends JFrame {
     private HashMap<String, Produit> produits = new HashMap<>();
     private double totalTTC = 0;
     private int numeroFacture = 0;
-    private RSAUtil rsa;  // ← clé RSA dérivée du mot de passe
 
-    // Constructeur qui reçoit la clé RSA
-    public FactureFrame(RSAUtil rsa) {
-        this.rsa = rsa;
-        chargerClientsChiffres();
-        chargerProduitsChiffres();
+    public FactureFrame() {
+        chargerClients();
+        chargerProduits();
         incrementerNumeroFacture();
         initUI();
     }
 
-    private void chargerClientsChiffres() {
+    private void chargerClients() {
         try (BufferedReader br = new BufferedReader(new FileReader("clients.txt"))) {
             String ligne;
             while ((ligne = br.readLine()) != null) {
                 if (ligne.trim().isEmpty()) continue;
                 String[] p = ligne.split("\\|");
                 String id = p[0];
-                String nom = rsa.decrypt(p[1]);
-                String tel = rsa.decrypt(p[2]);
-                String adresse = rsa.decrypt(p[3]);
-                String ice = rsa.decrypt(p[4]);
+                String nom = p[1];
+                String tel = p[2];
+                String adresse = p[3];
+                String ice = p[4];
                 clients.put(id, new Client(id, nom, tel, adresse, ice));
             }
         } catch (Exception e) {
-            // Exemples par défaut pour la première fois
             clients.put("C001", new Client("C001", "Mohammed Benali", "0661234567", "Casablanca", "001234567890123"));
             clients.put("C002", new Client("C002", "SARL ImportExport", "0522888999", "Rabat", "002345678901234"));
         }
     }
 
-    private void chargerProduitsChiffres() {
+    private void chargerProduits() {
         try (BufferedReader br = new BufferedReader(new FileReader("produits.txt"))) {
             String ligne;
             while ((ligne = br.readLine()) != null) {
@@ -58,7 +54,7 @@ public class FactureFrame extends JFrame {
                 String[] p = ligne.split("\\|");
                 String ref = p[0];
                 String designation = p[1];
-                double prixHT = Double.parseDouble(rsa.decrypt(p[2]));
+                double prixHT = Double.parseDouble(p[2]);
                 produits.put(ref, new Produit(ref, designation, prixHT));
             }
         } catch (Exception e) {
@@ -88,13 +84,13 @@ public class FactureFrame extends JFrame {
         setLayout(new BorderLayout());
         getContentPane().setBackground(Color.WHITE);
 
-        // === HEADER : Numéro, Date, Client + Zone large pour saisie produit/qté ===
+        // === HEADER ===
         JPanel header = new JPanel();
         header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
         header.setBackground(new Color(0, 102, 204));
         header.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
-        // Ligne 1 : Numéro facture + Date
+        // Ligne 1 : Numéro facture + Date live
         JPanel ligne1 = new JPanel(new GridLayout(1, 2, 20, 0));
         ligne1.setOpaque(false);
         lblNumFacture = new JLabel("Facture N° F" + new SimpleDateFormat("yyyy").format(new Date()) + "-" + String.format("%04d", numeroFacture));
@@ -102,11 +98,16 @@ public class FactureFrame extends JFrame {
         lblNumFacture.setForeground(Color.WHITE);
         ligne1.add(lblNumFacture);
 
-        JLabel lblDate = new JLabel("Date : " + new SimpleDateFormat("dd/MM/yyyy HH:mm").format(new Date()));
+        JLabel lblDate = new JLabel();
         lblDate.setFont(new Font("Arial", Font.BOLD, 18));
         lblDate.setForeground(Color.WHITE);
         lblDate.setHorizontalAlignment(SwingConstants.RIGHT);
         ligne1.add(lblDate);
+
+        Timer timer = new Timer(1000, e -> {
+            lblDate.setText("Date : " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
+        });
+        timer.start();
 
         // Ligne 2 : Client
         JPanel ligne2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
@@ -122,11 +123,11 @@ public class FactureFrame extends JFrame {
         lblClientNom.setFont(new Font("Arial", Font.BOLD, 16));
         ligne2.add(lblClientNom);
 
-        // Ligne 3 : Saisie produit + quantité (large et pro)
+        // Ligne 3 : Saisie produit + quantité
         JPanel ligne3 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
         ligne3.setOpaque(false);
         ligne3.add(new JLabel("Référence produit :")).setFont(new Font("Arial", Font.BOLD, 18));
-        txtRefProduit = new JTextField(30);  // ← large pour taper facilement
+        txtRefProduit = new JTextField(30);
         txtRefProduit.setFont(new Font("Arial", Font.BOLD, 20));
         txtRefProduit.addActionListener(e -> txtQuantite.requestFocus());
         ligne3.add(txtRefProduit);
@@ -147,7 +148,6 @@ public class FactureFrame extends JFrame {
         header.add(ligne1);
         header.add(ligne2);
         header.add(ligne3);
-
         add(header, BorderLayout.NORTH);
 
         // === TABLEAU ===
@@ -230,7 +230,7 @@ public class FactureFrame extends JFrame {
         g.setFont(new Font("Arial", Font.BOLD, 16));
         g.drawString(lblNumFacture.getText(), 50, 280);
         g.drawString("Client : " + lblClientNom.getText(), 50, 310);
-        g.drawString("Date : " + new SimpleDateFormat("dd/MM/yyyy ").format(new Date()), 50, 340);
+        g.drawString("Date : " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()), 50, 340);
 
         int y = 400;
         for (int i = 0; i < tableModel.getRowCount(); i++) {
@@ -252,18 +252,22 @@ public class FactureFrame extends JFrame {
             ImageIO.write(img, "png", new File("Facture_F" + numeroFacture + ".png"));
             JOptionPane.showMessageDialog(this, "Facture générée : Facture_F" + numeroFacture + ".png");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erreur PDF");
+            JOptionPane.showMessageDialog(this, "Erreur lors de la génération du PDF");
         }
     }
 
     class Client {
         String id, nom, telephone, adresse, ice;
-        Client(String i, String n, String t, String a, String ic) { id = i; nom = n; telephone = t; adresse = a; ice = ic; }
+        Client(String i, String n, String t, String a, String ic) {
+            id = i; nom = n; telephone = t; adresse = a; ice = ic;
+        }
     }
 
     class Produit {
         String ref, designation;
         double prixHT;
-        Produit(String r, String d, double p) { ref = r; designation = d; prixHT = p; }
+        Produit(String r, String d, double p) {
+            ref = r; designation = d; prixHT = p;
+        }
     }
 }

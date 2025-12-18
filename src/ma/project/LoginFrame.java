@@ -22,7 +22,7 @@ public class LoginFrame extends JFrame {
     }
 
     // ==================================================================
-    // Première utilisation : création du compte admin + génération clé RSA dérivée du mot de passe
+    // Première utilisation : création du compte admin (la clé RSA est générée ailleurs ou déjà existante)
     // ==================================================================
     private void showFirstLaunchWindow() {
         setTitle("StockSecure - Première utilisation");
@@ -44,8 +44,8 @@ public class LoginFrame extends JFrame {
         add(l1);
         add(userField);
 
-        JLabel l2 = new JLabel("Mot de passe (il servira aussi à générer la clé RSA) :");
-        l2.setBounds(50, 190, 450, 30);
+        JLabel l2 = new JLabel("Mot de passe :");
+        l2.setBounds(50, 190, 400, 30);
         JPasswordField passField = new JPasswordField();
         passField.setBounds(50, 225, 400, 40);
         add(l2);
@@ -67,7 +67,6 @@ public class LoginFrame extends JFrame {
                 return;
             }
 
-            // Sauvegarde du compte admin
             try (PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(CONFIG_FILE)))) {
                 pw.println(user);
                 pw.println(pass);
@@ -76,17 +75,7 @@ public class LoginFrame extends JFrame {
                 return;
             }
 
-            // Génération de la clé RSA DÉRIVÉE DU MOT DE PASSE
-            JOptionPane.showMessageDialog(this, "Génération de la clé RSA 2048-bits à partir de votre mot de passe... (3-5 secondes)");
-            RSAUtil rsa = new RSAUtil(pass);  // ← clé déterministe à partir du mot de passe
-
-            JOptionPane.showMessageDialog(this, 
-                "Compte administrateur créé avec succès !\n" +
-                "Clé RSA générée à partir de votre mot de passe.\n" +
-                "Vos données seront chiffrées de façon sécurisée.",
-                "Sécurité activée", JOptionPane.INFORMATION_MESSAGE);
-
-            // Passage au login normal
+            JOptionPane.showMessageDialog(this, "Compte administrateur créé avec succès !");
             SwingUtilities.invokeLater(() -> {
                 dispose();
                 new LoginFrame(true);
@@ -97,7 +86,7 @@ public class LoginFrame extends JFrame {
     }
 
     // ==================================================================
-    // Login normal : régénération de la clé RSA à partir du mot de passe saisi
+    // Login normal : chargement de HybridCrypto (clé RSA depuis rsa_key.txt)
     // ==================================================================
     private void showNormalLoginWindow() {
         setTitle("StockSecure - Connexion");
@@ -131,7 +120,6 @@ public class LoginFrame extends JFrame {
         btn.setBounds(140, 220, 170, 45);
         btn.setBackground(new Color(0, 120, 215));
         btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("Arial", Font.BOLD, 14));
         add(btn);
 
         String[] creds = readCredentials();
@@ -139,16 +127,10 @@ public class LoginFrame extends JFrame {
         String adminPass = creds[1];
 
         btn.addActionListener(e -> {
-            String enteredUser = userField.getText();
-            String enteredPass = new String(passField.getPassword());
-
-            if (enteredUser.equals(adminUser) && enteredPass.equals(adminPass)) {
-                // Régénération de la clé RSA à partir du mot de passe correct
-                RSAUtil rsa = new RSAUtil(enteredPass);
-
-                JOptionPane.showMessageDialog(this, "Connexion réussie ! Clé RSA régénérée.");
+            if (userField.getText().equals(adminUser) && new String(passField.getPassword()).equals(adminPass)) {
+                JOptionPane.showMessageDialog(this, "Connexion réussie !");
                 dispose();
-                new DashboardFrame(rsa);  // ← on passe la clé RSA au Dashboard
+                new DashboardFrame();
             } else {
                 JOptionPane.showMessageDialog(this, "Identifiants incorrects !", "Erreur", JOptionPane.ERROR_MESSAGE);
             }
@@ -163,7 +145,7 @@ public class LoginFrame extends JFrame {
             String pass = br.readLine();
             return new String[]{user, pass};
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Fichier de configuration corrompu.\nSupprimez config.txt et relancez.");
+            JOptionPane.showMessageDialog(this, "Fichier config corrompu. Supprimez config.txt et relancez.");
             System.exit(0);
             return new String[]{"", ""};
         }
