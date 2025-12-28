@@ -1,69 +1,52 @@
 package ma.project;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import javax.imageio.ImageIO;
 
 public class FactureFrame extends JFrame {
-
     private DefaultTableModel tableModel;
     private JTextField txtClientId, txtRefProduit, txtQuantite;
-    private JLabel lblClientNom, lblTotalTTC, lblNumFacture;
-    private HashMap<String, Client> clients = new HashMap<>();
+    private HashMap<String, String> clients = new HashMap<>();
     private HashMap<String, Produit> produits = new HashMap<>();
-    private double totalTTC = 0;
+    private JLabel lblClient;
+    private JLabel lblTotal;
+    private JLabel lblNumFacture;
     private int numeroFacture = 0;
+    
+    private static final Color PRIMARY_COLOR = new Color(25, 118, 210);
+    private static final Color SUCCESS_COLOR = new Color(56, 142, 60);
+    private static final Color BG_COLOR = new Color(250, 250, 252);
+    private static final Color HEADER_COLOR = new Color(30, 136, 229);
 
     public FactureFrame() {
-        chargerClients();
-        chargerProduits();
+        chargerDonnees();
         incrementerNumeroFacture();
         initUI();
     }
 
-    private void chargerClients() {
-        try (BufferedReader br = new BufferedReader(new FileReader("clients.txt"))) {
-            String ligne;
-            while ((ligne = br.readLine()) != null) {
-                if (ligne.trim().isEmpty()) continue;
-                String[] p = ligne.split("\\|");
-                String id = p[0];
-                String nom = p[1];
-                String tel = p[2];
-                String adresse = p[3];
-                String ice = p[4];
-                clients.put(id, new Client(id, nom, tel, adresse, ice));
-            }
-        } catch (Exception e) {
-            clients.put("C001", new Client("C001", "Mohammed Benali", "0661234567", "Casablanca", "001234567890123"));
-            clients.put("C002", new Client("C002", "SARL ImportExport", "0522888999", "Rabat", "002345678901234"));
-        }
-    }
+    private void chargerDonnees() {
+        clients.put("C001", "Mohammed Benali - Casablanca");
+        clients.put("C002", "SARL ImportExport - Rabat");
+        clients.put("C003", "Pharmacie Al Massira - Marrakech");
 
-    private void chargerProduits() {
-        try (BufferedReader br = new BufferedReader(new FileReader("produits.txt"))) {
-            String ligne;
-            while ((ligne = br.readLine()) != null) {
-                if (ligne.trim().isEmpty()) continue;
-                String[] p = ligne.split("\\|");
-                String ref = p[0];
-                String designation = p[1];
-                double prixHT = Double.parseDouble(p[2]);
-                produits.put(ref, new Produit(ref, designation, prixHT));
-            }
-        } catch (Exception e) {
-            produits.put("P101", new Produit("P101", "Samsung Galaxy S24", 10200.00));
-            produits.put("P202", new Produit("P202", "Sac de ciment 50kg", 102.00));
-            produits.put("P303", new Produit("P303", "Huile d'olive 5L", 144.00));
-        }
+        produits.put("P101", new Produit("Samsung Galaxy S24", 10200.00));
+        produits.put("P202", new Produit("Sac de ciment 50kg", 102.00));
+        produits.put("P303", new Produit("Huile d'olive 5L", 144.00));
+        produits.put("P404", new Produit("Laptop Dell XPS", 15000.00));
+        produits.put("P505", new Produit("Pack eau 12x1.5L", 54.00));
     }
-
     private void incrementerNumeroFacture() {
         try (BufferedReader br = new BufferedReader(new FileReader("compteur.txt"))) {
             numeroFacture = Integer.parseInt(br.readLine().trim());
@@ -77,114 +60,242 @@ public class FactureFrame extends JFrame {
     }
 
     private void initUI() {
-        setTitle("StockSecure - Nouvelle Facture");
-        setSize(1100, 750);
+        setTitle("StockSecure - Facturation Rapide");
+        setSize(1000, 700);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
-        getContentPane().setBackground(Color.WHITE);
+        getContentPane().setBackground(BG_COLOR);
 
-        // === HEADER ===
-        JPanel header = new JPanel();
-        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
-        header.setBackground(new Color(0, 102, 204));
-        header.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
-
-        // Ligne 1 : Numéro facture + Date live
-        JPanel ligne1 = new JPanel(new GridLayout(1, 2, 20, 0));
-        ligne1.setOpaque(false);
-        lblNumFacture = new JLabel("Facture N° F" + new SimpleDateFormat("yyyy").format(new Date()) + "-" + String.format("%04d", numeroFacture));
-        lblNumFacture.setFont(new Font("Arial", Font.BOLD, 24));
-        lblNumFacture.setForeground(Color.WHITE);
-        ligne1.add(lblNumFacture);
-
-        JLabel lblDate = new JLabel();
-        lblDate.setFont(new Font("Arial", Font.BOLD, 18));
-        lblDate.setForeground(Color.WHITE);
-        lblDate.setHorizontalAlignment(SwingConstants.RIGHT);
-        ligne1.add(lblDate);
-
-        Timer timer = new Timer(1000, e -> {
-            lblDate.setText("Date : " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
-        });
-        timer.start();
-
-        // Ligne 2 : Client
-        JPanel ligne2 = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-        ligne2.setOpaque(false);
-        ligne2.add(new JLabel("Client ID :")).setForeground(Color.WHITE);
-        txtClientId = new JTextField(15);
-        txtClientId.addActionListener(e -> chercherClient());
-        ligne2.add(txtClientId);
-
-        ligne2.add(new JLabel("Client :")).setForeground(Color.WHITE);
-        lblClientNom = new JLabel("Entrez l'ID client...");
-        lblClientNom.setForeground(Color.YELLOW);
-        lblClientNom.setFont(new Font("Arial", Font.BOLD, 16));
-        ligne2.add(lblClientNom);
-
-        // Ligne 3 : Saisie produit + quantité
-        JPanel ligne3 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 15));
-        ligne3.setOpaque(false);
-        ligne3.add(new JLabel("Référence produit :")).setFont(new Font("Arial", Font.BOLD, 18));
-        txtRefProduit = new JTextField(30);
-        txtRefProduit.setFont(new Font("Arial", Font.BOLD, 20));
-        txtRefProduit.addActionListener(e -> txtQuantite.requestFocus());
-        ligne3.add(txtRefProduit);
-
-        ligne3.add(new JLabel("Quantité :")).setFont(new Font("Arial", Font.BOLD, 18));
-        txtQuantite = new JTextField("1", 8);
-        txtQuantite.setFont(new Font("Arial", Font.BOLD, 24));
-        txtQuantite.addActionListener(e -> ajouterProduit());
-        ligne3.add(txtQuantite);
-
-        JButton btnAdd = new JButton("AJOUTER AU PANIER");
-        btnAdd.setFont(new Font("Arial", Font.BOLD, 18));
-        btnAdd.setBackground(new Color(0, 150, 0));
-        btnAdd.setForeground(Color.WHITE);
-        btnAdd.addActionListener(e -> ajouterProduit());
-        ligne3.add(btnAdd);
-
-        header.add(ligne1);
-        header.add(ligne2);
-        header.add(ligne3);
+        // Header moderne
+        JPanel header = createHeader();
         add(header, BorderLayout.NORTH);
 
-        // === TABLEAU ===
-        tableModel = new DefaultTableModel(new String[]{"Produit", "PU HT", "Qté", "Total HT"}, 0);
-        JTable table = new JTable(tableModel);
-        table.setRowHeight(35);
-        table.setFont(new Font("Arial", Font.PLAIN, 16));
-        add(new JScrollPane(table), BorderLayout.CENTER);
+        // Tableau avec style
+        JPanel tablePanel = createTablePanel();
+        add(tablePanel, BorderLayout.CENTER);
 
-        // === TOTAL + PDF ===
-        JPanel bas = new JPanel(new BorderLayout());
-        lblTotalTTC = new JLabel("TOTAL TTC : 0.00 DH");
-        lblTotalTTC.setFont(new Font("Arial", Font.BOLD, 32));
-        lblTotalTTC.setForeground(new Color(0, 150, 0));
-        bas.add(lblTotalTTC, BorderLayout.WEST);
-
-        JButton btnPDF = new JButton("IMPRIMER PDF + LOGO");
-        btnPDF.setFont(new Font("Arial", Font.BOLD, 20));
-        btnPDF.setBackground(new Color(0, 150, 0));
-        btnPDF.setForeground(Color.WHITE);
-        btnPDF.addActionListener(e -> genererPDFAvecLogo());
-        bas.add(btnPDF, BorderLayout.EAST);
-        add(bas, BorderLayout.PAGE_END);
+        // Panel de saisie et total
+        JPanel bottomPanel = createBottomPanel();
+        add(bottomPanel, BorderLayout.SOUTH);
 
         setVisible(true);
     }
 
-    private void chercherClient() {
+    private JPanel createHeader() {
+        JPanel header = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setPaint(new GradientPaint(0, 0, HEADER_COLOR, 0, getHeight(), PRIMARY_COLOR));
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                g2d.dispose();
+            }
+        };
+        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
+        header.setOpaque(false);
+        header.setBorder(new EmptyBorder(25, 30, 25, 30));
+
+        // Titre
+        JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        titlePanel.setOpaque(false);
+        JLabel iconLabel = new JLabel("🧾");
+        iconLabel.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 35));
+        JLabel title = new JLabel("Facturation Rapide");
+        title.setFont(new Font("Segoe UI", Font.BOLD, 24));
+        title.setForeground(Color.WHITE);
+        titlePanel.add(iconLabel);
+        titlePanel.add(Box.createHorizontalStrut(10));
+        titlePanel.add(title);
+        header.add(titlePanel);
+
+        // Champs de saisie
+        JPanel inputPanel = new JPanel(new GridLayout(2, 3, 15, 15));
+        inputPanel.setOpaque(false);
+        inputPanel.setBorder(new EmptyBorder(20, 0, 0, 0));
+
+        // Client ID
+        JPanel clientIdPanel = createInputField("Client ID", txtClientId = createStyledTextField());
+        txtClientId.addActionListener(e -> verifierClient());
+        inputPanel.add(clientIdPanel);
+
+        // Client Name
+        JPanel clientNamePanel = new JPanel(new BorderLayout());
+        clientNamePanel.setOpaque(false);
+        JLabel clientLabel = new JLabel("Client :");
+        clientLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        clientLabel.setForeground(new Color(255, 255, 255, 220));
+        lblClient = new JLabel("Entrez un ID client...");
+        lblClient.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        lblClient.setForeground(new Color(255, 255, 200));
+        clientNamePanel.add(clientLabel, BorderLayout.NORTH);
+        clientNamePanel.add(lblClient, BorderLayout.CENTER);
+        inputPanel.add(clientNamePanel);
+
+        // Référence Produit
+        JPanel refPanel = createInputField("Réf Produit", txtRefProduit = createStyledTextField());
+        txtRefProduit.addActionListener(e -> txtQuantite.requestFocus());
+        inputPanel.add(refPanel);
+
+        // Espace vide pour alignement
+        inputPanel.add(new JPanel());
+        inputPanel.add(new JPanel());
+        inputPanel.add(new JPanel());
+
+        header.add(inputPanel);
+        return header;
+    }
+
+    private JPanel createInputField(String label, JTextField field) {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setOpaque(false);
+        JLabel lbl = new JLabel(label + " :");
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        lbl.setForeground(new Color(255, 255, 255, 220));
+        panel.add(lbl, BorderLayout.NORTH);
+        panel.add(field, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JTextField createStyledTextField() {
+        JTextField field = new JTextField();
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        field.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(255, 255, 255, 100), 1),
+            new EmptyBorder(10, 12, 10, 12)
+        ));
+        field.setBackground(new Color(255, 255, 255, 240));
+        field.setOpaque(true);
+        return field;
+    }
+
+    private JPanel createTablePanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        tableModel = new DefaultTableModel(new String[]{"Produit", "PU HT", "Qté", "Total HT"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        JTable table = new JTable(tableModel);
+        table.setRowHeight(45);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setSelectionBackground(new Color(PRIMARY_COLOR.getRed(), PRIMARY_COLOR.getGreen(), PRIMARY_COLOR.getBlue(), 50));
+        table.setGridColor(new Color(230, 230, 230));
+        table.setShowGrid(true);
+        table.setIntercellSpacing(new Dimension(0, 0));
+        
+        // Header du tableau
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        table.getTableHeader().setBackground(PRIMARY_COLOR);
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setPreferredSize(new Dimension(0, 40));
+
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(new LineBorder(new Color(220, 220, 220), 1));
+        scrollPane.setBackground(BG_COLOR);
+        
+        panel.add(scrollPane, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private JPanel createBottomPanel() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBackground(BG_COLOR);
+        panel.setBorder(new EmptyBorder(15, 20, 20, 20));
+
+        // Panel de saisie
+        JPanel saisiePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        saisiePanel.setBackground(BG_COLOR);
+        saisiePanel.setBorder(new EmptyBorder(0, 0, 15, 0));
+
+        JLabel qteLabel = new JLabel("Quantité :");
+        qteLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        qteLabel.setForeground(new Color(80, 80, 80));
+
+        txtQuantite = new JTextField("1", 8);
+        txtQuantite.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        txtQuantite.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(PRIMARY_COLOR, 2),
+            new EmptyBorder(8, 12, 8, 12)
+        ));
+        txtQuantite.addActionListener(e -> ajouterProduit());
+
+        JButton btnAjouter = createStyledButton("➕ AJOUTER PRODUIT", PRIMARY_COLOR);
+        btnAjouter.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnAjouter.setPreferredSize(new Dimension(200, 45));
+        btnAjouter.addActionListener(e -> ajouterProduit());
+
+        saisiePanel.add(qteLabel);
+        saisiePanel.add(txtQuantite);
+        saisiePanel.add(Box.createHorizontalStrut(20));
+        saisiePanel.add(btnAjouter);
+
+        // Panel total et impression
+        JPanel totalPanel = new JPanel(new BorderLayout());
+        totalPanel.setBackground(BG_COLOR);
+        totalPanel.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(SUCCESS_COLOR, 2, true),
+            new EmptyBorder(15, 20, 15, 20)
+        ));
+
+        lblTotal = new JLabel("TOTAL TTC : 0.00 DH");
+        lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblTotal.setForeground(SUCCESS_COLOR);
+        totalPanel.add(lblTotal, BorderLayout.WEST);
+
+        JButton btnPDF = createStyledButton("🖨️ IMPRIMER FACTURE", SUCCESS_COLOR);
+        btnPDF.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnPDF.setPreferredSize(new Dimension(250, 50));
+        btnPDF.addActionListener(e -> genererPDFAvecLogo());
+        totalPanel.add(btnPDF, BorderLayout.EAST);
+
+        panel.add(saisiePanel, BorderLayout.NORTH);
+        panel.add(totalPanel, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JButton createStyledButton(String text, Color color) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setBackground(color);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setBorder(new EmptyBorder(10, 20, 10, 20));
+        
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
+            public void mouseEntered(java.awt.event.MouseEvent e) {
+                btn.setBackground(color.darker());
+            }
+            
+            @Override
+            public void mouseExited(java.awt.event.MouseEvent e) {
+                btn.setBackground(color);
+            }
+        });
+        
+        return btn;
+    }
+
+    private void verifierClient() {
         String id = txtClientId.getText().toUpperCase().trim();
-        Client c = clients.get(id);
-        if (c != null) {
-            lblClientNom.setText(c.nom + " - " + c.telephone);
-            lblClientNom.setForeground(Color.BLUE);
+        String nom = clients.get(id);
+        if (nom != null) {
+            lblClient.setText(nom);
+            lblClient.setForeground(new Color(144, 238, 144));
             txtRefProduit.requestFocus();
         } else {
-            lblClientNom.setText("Client inconnu !");
-            lblClientNom.setForeground(Color.RED);
+            lblClient.setText("❌ Client inconnu !");
+            lblClient.setForeground(new Color(255, 150, 150));
         }
     }
 
@@ -192,17 +303,26 @@ public class FactureFrame extends JFrame {
         String ref = txtRefProduit.getText().toUpperCase().trim();
         Produit p = produits.get(ref);
         if (p == null) {
-            JOptionPane.showMessageDialog(this, "Produit non trouvé !");
+            JOptionPane.showMessageDialog(this, "❌ Produit non trouvé !\nRéférences disponibles: P101, P202, P303, P404, P505", 
+                "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
         int qte = 1;
-        try { qte = Integer.parseInt(txtQuantite.getText()); } catch (Exception ignored) {}
+        try { 
+            qte = Integer.parseInt(txtQuantite.getText()); 
+        } catch (Exception ignored) {}
         if (qte < 1) qte = 1;
 
         double totalLigne = p.prixHT * qte;
-        tableModel.addRow(new Object[]{p.designation, p.prixHT, qte, totalLigne});
-        totalTTC += totalLigne * 1.20;
-        lblTotalTTC.setText(String.format("TOTAL TTC : %.2f DH", totalTTC));
+        tableModel.addRow(new Object[]{p.nom, String.format("%.2f", p.prixHT), qte, String.format("%.2f", totalLigne)});
+
+        // Calculer le total TTC
+        double totalHT = 0;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            totalHT += Double.parseDouble(tableModel.getValueAt(i, 3).toString());
+        }
+        double totalTTC = totalHT * 1.20;
+        lblTotal.setText(String.format("TOTAL TTC : %.2f DH", totalTTC));
 
         txtRefProduit.setText("");
         txtQuantite.setText("1");
@@ -227,9 +347,13 @@ public class FactureFrame extends JFrame {
             g.drawString("StockSecure Maroc", 220, 180);
         }
 
-        g.setFont(new Font("Arial", Font.BOLD, 16));
+        lblNumFacture = new JLabel("Facture N° F" + new SimpleDateFormat("yyyy").format(new Date()) + "-" + String.format("%04d", numeroFacture));
+        lblNumFacture.setFont(new Font("Arial", Font.BOLD, 24));
+        lblNumFacture.setForeground(Color.WHITE);
+        
+        
         g.drawString(lblNumFacture.getText(), 50, 280);
-        g.drawString("Client : " + lblClientNom.getText(), 50, 310);
+        g.drawString("Client : " + lblClient.getText(), 50, 310);
         g.drawString("Date : " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()), 50, 340);
 
         int y = 400;
@@ -244,7 +368,7 @@ public class FactureFrame extends JFrame {
 
         g.setFont(new Font("Arial", Font.BOLD, 22));
         g.setColor(new Color(0, 150, 0));
-        g.drawString(lblTotalTTC.getText(), 200, y + 50);
+        g.drawString(lblTotal.getText(), 200, y + 50);
 
         g.dispose();
 
@@ -256,18 +380,9 @@ public class FactureFrame extends JFrame {
         }
     }
 
-    class Client {
-        String id, nom, telephone, adresse, ice;
-        Client(String i, String n, String t, String a, String ic) {
-            id = i; nom = n; telephone = t; adresse = a; ice = ic;
-        }
-    }
-
     class Produit {
-        String ref, designation;
+        String nom;
         double prixHT;
-        Produit(String r, String d, double p) {
-            ref = r; designation = d; prixHT = p;
-        }
+        Produit(String n, double p) { nom = n; prixHT = p; }
     }
 }
