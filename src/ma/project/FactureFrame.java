@@ -34,6 +34,15 @@ public class FactureFrame extends JFrame {
         chargerDonnees();
         incrementerNumeroFacture();
         initUI();
+     // Chargement de l'icône de l'application
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/ma/project/Design sans titre.png"));
+            // Ou si tu l'as mis directement dans src : new ImageIcon("Design sans titre.png")
+            setIconImage(icon.getImage());
+        } catch (Exception e) {
+            // Si l'icône n'est pas trouvée, on continue sans
+            System.out.println("Icône non trouvée");
+        }
     }
 
     private void chargerDonnees() {

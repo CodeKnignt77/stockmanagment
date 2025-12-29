@@ -6,6 +6,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public class DashboardFrame extends JFrame {
 
@@ -37,6 +38,15 @@ public class DashboardFrame extends JFrame {
         // Footer
         JPanel footer = createFooter();
         add(footer, BorderLayout.SOUTH);
+     // Chargement de l'icône de l'application
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/ma/project/Design sans titre.png"));
+            // Ou si tu l'as mis directement dans src : new ImageIcon("Design sans titre.png")
+            setIconImage(icon.getImage());
+        } catch (Exception e) {
+            // Si l'icône n'est pas trouvée, on continue sans
+            System.out.println("Icône non trouvée");
+        }
 
         setVisible(true);
     }
@@ -202,6 +212,8 @@ public class DashboardFrame extends JFrame {
 
         return card;
     }
+    
+    
 
     private JPanel createFooter() {
         JPanel footer = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -215,4 +227,5 @@ public class DashboardFrame extends JFrame {
         footer.add(footerText);
         return footer;
     }
+
 }

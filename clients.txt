@@ -1,3 +1,2 @@
 C001|Mohammed Benali|0661234567|Casablanca|001234567890123
-C003|chaouki|000|hna|tyyt
 C002|SARL ImportExport|0522888999|Rabat|002345678901234

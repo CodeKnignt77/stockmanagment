@@ -20,6 +20,15 @@ public class LoginFrame extends JFrame {
 
     public LoginFrame() {
         this(false);
+     // Chargement de l'icône de l'application
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/ma/project/Design sans titre.png"));
+            // Ou si tu l'as mis directement dans src : new ImageIcon("Design sans titre.png")
+            setIconImage(icon.getImage());
+        } catch (Exception e) {
+            // Si l'icône n'est pas trouvée, on continue sans
+            System.out.println("Icône non trouvée");
+        }
     }
 
     public LoginFrame(boolean compteJusteCree) {
@@ -29,6 +38,15 @@ public class LoginFrame extends JFrame {
             showNormalLoginWindow();
         } else {
             showFirstLaunchWindow();
+        }
+     // Chargement de l'icône de l'application
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/ma/project/Design sans titre.png"));
+            // Ou si tu l'as mis directement dans src : new ImageIcon("Design sans titre.png")
+            setIconImage(icon.getImage());
+        } catch (Exception e) {
+            // Si l'icône n'est pas trouvée, on continue sans
+            System.out.println("Icône non trouvée");
         }
     }
 

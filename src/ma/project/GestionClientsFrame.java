@@ -2,6 +2,8 @@ package ma.project;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.LineBorder;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -18,128 +20,269 @@ public class GestionClientsFrame extends JFrame {
     private JTextField txtNom, txtTelephone, txtAdresse, txtIce;
     private JLabel lblId, lblDate;
     private List<Client> listeClients = new ArrayList<>();
+    
+    // Constants from DashboardFrame
+    private static final Color PRIMARY_COLOR = new Color(25, 118, 210);
+    private static final Color SECONDARY_COLOR = new Color(48, 63, 159);
+    private static final Color BG_COLOR = new Color(250, 250, 252);
+    private static final Color SUCCESS_COLOR = new Color(56, 142, 60);
+    private static final Color DANGER_COLOR = new Color(211, 47, 47);
 
     public GestionClientsFrame() {
         try {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) {}
             
             initUI();
             chargerClients();
         } catch (Exception ex) {
             ex.printStackTrace();
-            JOptionPane.showMessageDialog(null, "Erreur critique lors de l'ouverture du module Clients :\n" + ex.getMessage());
+        }
+    
+        try {
+            ImageIcon icon = new ImageIcon(getClass().getResource("/ma/project/Design sans titre.png"));
+            setIconImage(icon.getImage());
+        } catch (Exception e) {
+            System.out.println("Icône non trouvée");
         }
     }
-    
-    private void genererImageRapport(String titreModule) {
-        int width = 800;
-        int rowHeight = 40;
-        int headerHeight = 250;
-        int footerHeight = 100;
-        int tableHeight = tableModel.getRowCount() * rowHeight + 50; // en-tête tableau + lignes
-        int height = headerHeight + tableHeight + footerHeight;
 
+    private void initUI() {
+        setTitle("StockSecure - Gestion des Clients");
+        setSize(1100, 750);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
+        setLayout(new BorderLayout());
+        getContentPane().setBackground(BG_COLOR);
+
+        // === HEADER WITH GRADIENT ===
+        JPanel header = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g.create();
+                g2d.setPaint(new GradientPaint(0, 0, PRIMARY_COLOR, 0, getHeight(), SECONDARY_COLOR));
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+                g2d.dispose();
+            }
+        };
+        header.setLayout(new GridBagLayout());
+        header.setBorder(new EmptyBorder(20, 30, 20, 30));
+        
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 15, 10, 15);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        
+        // -- Title Section --
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setOpaque(false);
+        
+        JLabel lblIcon = new JLabel("👥");
+        lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 40));
+        
+        JLabel lblTitre = new JLabel("GESTION DES CLIENTS");
+        lblTitre.setFont(new Font("Segoe UI", Font.BOLD, 28));
+        lblTitre.setForeground(Color.WHITE);
+        
+        JPanel textPanel = new JPanel(new BorderLayout());
+        textPanel.setOpaque(false);
+        textPanel.add(lblTitre, BorderLayout.NORTH);
+        
+        lblDate = new JLabel();
+        lblDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        lblDate.setForeground(new Color(255, 255, 255, 200));
+        textPanel.add(lblDate, BorderLayout.SOUTH);
+        
+        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
+        leftPanel.setOpaque(false);
+        leftPanel.add(lblIcon);
+        leftPanel.add(textPanel);
+        
+        titlePanel.add(leftPanel, BorderLayout.WEST);
+
+        Timer timer = new Timer(1000, e -> {
+            lblDate.setText(new SimpleDateFormat("dd MMMM yyyy - HH:mm:ss").format(new Date()));
+        });
+        timer.start();
+
+        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        header.add(titlePanel, gbc);
+
+        // -- Form Section --
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setOpaque(false);
+        formPanel.setBorder(new EmptyBorder(15, 0, 10, 0));
+        
+        GridBagConstraints fgbc = new GridBagConstraints();
+        fgbc.insets = new Insets(8, 10, 8, 10);
+        fgbc.anchor = GridBagConstraints.WEST;
+        
+        // Row 1
+        fgbc.gridx = 0; fgbc.gridy = 0;
+        formPanel.add(createLabel("ID Client :"), fgbc);
+        
+        lblId = new JLabel("---");
+        lblId.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        lblId.setForeground(new Color(255, 215, 0)); // Gold
+        fgbc.gridx = 1; 
+        formPanel.add(lblId, fgbc);
+        
+        fgbc.gridx = 2;
+        formPanel.add(createLabel("Nom complet :"), fgbc);       
+        txtNom = createStyledTextField(20);
+        fgbc.gridx = 3;
+        formPanel.add(txtNom, fgbc);
+        
+        fgbc.gridx = 4;
+        formPanel.add(createLabel("Téléphone :"), fgbc);
+        txtTelephone = createStyledTextField(15);
+        fgbc.gridx = 5;
+        formPanel.add(txtTelephone, fgbc);
+
+        // Row 2
+        fgbc.gridx = 0; fgbc.gridy = 1;
+        formPanel.add(createLabel("Adresse :"), fgbc);
+        txtAdresse = createStyledTextField(20);
+        fgbc.gridx = 1; fgbc.gridwidth = 3; fgbc.fill = GridBagConstraints.HORIZONTAL;
+        formPanel.add(txtAdresse, fgbc);
+        fgbc.fill = GridBagConstraints.NONE; fgbc.gridwidth = 1; 
+        
+        fgbc.gridx = 4;
+        formPanel.add(createLabel("ICE :"), fgbc);
+        txtIce = createStyledTextField(15);
+        fgbc.gridx = 5;
+        formPanel.add(txtIce, fgbc);
+
+        gbc.gridy = 1;
+        header.add(formPanel, gbc);
+
+        // -- Button Section --
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
+        btnPanel.setOpaque(false);
+        btnPanel.setBorder(new EmptyBorder(15, 0, 0, 0));
+
+        JButton btnAdd = createStyledButton("AJOUTER", SUCCESS_COLOR);
+        btnAdd.addActionListener(e -> ajouterClient());
+        
+        JButton btnEdit = createStyledButton("MODIFIER", PRIMARY_COLOR);
+        btnEdit.addActionListener(e -> modifierClient());
+
+        JButton btnDel = createStyledButton("SUPPRIMER", DANGER_COLOR);
+        btnDel.addActionListener(e -> supprimerClient());
+
+        JButton btnKlear = createStyledButton("VIDER", new Color(117, 117, 117)); // Grey
+        btnKlear.addActionListener(e -> viderChamps());
+        
+        JButton btnPrint = createStyledButton("IMPRIMER", new Color(156, 39, 176)); // Purple
+        btnPrint.addActionListener(e -> genererImageTableau("Liste_Clients_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())));
+
+        btnPanel.add(btnAdd);
+        btnPanel.add(btnEdit);
+        btnPanel.add(btnDel);
+        btnPanel.add(btnKlear);
+        btnPanel.add(btnPrint);
+
+        gbc.gridy = 2;
+        header.add(btnPanel, gbc);
+
+        add(header, BorderLayout.NORTH);
+
+        // === TABLE SECTION ===
+        String[] columns = {"ID Client", "Nom", "Téléphone", "Adresse", "ICE"};
+        tableModel = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        
+        table = new JTable(tableModel);
+        table.setRowHeight(40);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.setSelectionBackground(new Color(PRIMARY_COLOR.getRed(), PRIMARY_COLOR.getGreen(), PRIMARY_COLOR.getBlue(), 50));
+        table.setSelectionForeground(Color.BLACK);
+        table.setShowVerticalLines(false);
+        table.setIntercellSpacing(new Dimension(0, 0));
+        
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        table.getTableHeader().setBackground(PRIMARY_COLOR);
+        table.getTableHeader().setForeground(Color.WHITE);
+        table.getTableHeader().setPreferredSize(new Dimension(100, 45));
+        
+        table.getSelectionModel().addListSelectionListener(e -> selectionnerClient());
+        
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(new EmptyBorder(20, 20, 20, 20));
+        scrollPane.getViewport().setBackground(Color.WHITE);
+        
+        JPanel tablePanel = new JPanel(new BorderLayout());
+        tablePanel.setBackground(BG_COLOR);
+        tablePanel.add(scrollPane, BorderLayout.CENTER);
+        
+        add(tablePanel, BorderLayout.CENTER);
+        
+        setVisible(true);
+    }
+    
+    // === HELPER METHODS ===
+
+    private JLabel createLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        lbl.setForeground(new Color(255, 255, 255, 220));
+        return lbl;
+    }
+
+    private JTextField createStyledTextField(int cols) {
+        JTextField txt = new JTextField(cols);
+        txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txt.setBorder(BorderFactory.createCompoundBorder(
+            new LineBorder(new Color(255, 255, 255, 100), 1), 
+            new EmptyBorder(8, 10, 8, 10)));
+        txt.setBackground(new Color(255, 255, 255, 240));
+        return txt;
+    }
+
+    private JButton createStyledButton(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setBorderPainted(false);
+        btn.setBorder(new EmptyBorder(10, 20, 10, 20));
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                btn.setBackground(bg.darker());
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                btn.setBackground(bg);
+            }
+        });
+        return btn;
+    }
+
+    private void genererImageTableau(String titreFichier) {
+        JViewport viewport = table.getParent() instanceof JViewport ? (JViewport) table.getParent() : null;
+        Component comp = viewport != null ? viewport : table;
+
+        int width = comp.getWidth();
+        int height = comp.getHeight();
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = img.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, width, height);
-
-        int y = 60;
-
-        // === TITRE CENTRE ===
-        g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", Font.BOLD, 32));
-        FontMetrics fm = g.getFontMetrics();
-        int titreWidth = fm.stringWidth(titreModule);
-        g.drawString(titreModule, (width - titreWidth) / 2, y);
-
-        y += 80;
-
-        // === LOGO CENTRE ===
-        try {
-            BufferedImage logo = ImageIO.read(new File("logo.png"));
-            int logoWidth = 160;
-            int logoHeight = 160;
-            g.drawImage(logo, (width - logoWidth) / 2, y - 40, logoWidth, logoHeight, null);
-        } catch (Exception e) {
-            g.setFont(new Font("Arial", Font.BOLD, 20));
-            String text = "StockSecure Maroc";
-            int textWidth = fm.stringWidth(text);
-            g.drawString(text, (width - textWidth) / 2, y + 60);
-        }
-
-        y += 140;
-
-        // === DATE À GAUCHE ===
-        g.setFont(new Font("Arial", Font.BOLD, 16));
-        g.drawString("Date : " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()), 50, y);
-
-        y += 60;
-
-        // === TABLEAU ===
-        int tableLeft = 50;
-        int tableWidth = width - 100;
-        int colCount = tableModel.getColumnCount();
-        int[] colWidths = new int[colCount];
-        // Ajuste les largeurs selon tes colonnes
-        if (titreModule.contains("CLIENTS")) {
-            colWidths = new int[]{100, 200, 150, 200, 150}; // ID, Nom, Tel, Adresse, ICE
-        } else if (titreModule.contains("PRODUITS")) {
-            colWidths = new int[]{100, 300, 150, 150}; // Ref, Designation, Prix, Quantité
-        } else { // Stock
-            colWidths = new int[]{100, 300, 150, 150}; // Ref, Designation, Prix, Quantité
-        }
-
-        // En-tête tableau
-        g.setColor(new Color(0, 102, 204));
-        g.fillRect(tableLeft, y, tableWidth, 40);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Arial", Font.BOLD, 16));
-        int x = tableLeft + 20;
-        for (int i = 0; i < colCount; i++) {
-            g.drawString(tableModel.getColumnName(i), x, y + 25);
-            x += colWidths[i];
-        }
-
-        y += 50;
-
-        // Lignes du tableau
-        g.setColor(Color.BLACK);
-        g.setFont(new Font("Arial", Font.PLAIN, 14));
-        for (int row = 0; row < tableModel.getRowCount(); row++) {
-            x = tableLeft + 20;
-            for (int col = 0; col < colCount; col++) {
-                Object value = tableModel.getValueAt(row, col);
-                String text = value != null ? value.toString() : "";
-                g.drawString(text, x, y + 25);
-                x += colWidths[col];
-            }
-            // Bordures horizontales
-            g.drawLine(tableLeft, y + 40, tableLeft + tableWidth, y + 40);
-            y += rowHeight;
-        }
-
-        // Bordure extérieure du tableau
-        g.drawRect(tableLeft, y - tableHeight, tableWidth, tableHeight);
-
-        // === PIED DE PAGE ===
-        y += 40;
-        g.setFont(new Font("Arial", Font.PLAIN, 14));
-        g.setColor(Color.GRAY);
-        g.drawString("Généré par StockSecure - © 2025", 50, y);
-        String compteur = "Nombre d'éléments : " + tableModel.getRowCount();
-        fm = g.getFontMetrics();
-        int compteurWidth = fm.stringWidth(compteur);
-        g.drawString(compteur, width - 50 - compteurWidth, y);
-
+        comp.paint(g);
         g.dispose();
 
-        String fichier = titreModule.replace(" ", "_") + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".png";
         try {
-            ImageIO.write(img, "png", new File(fichier));
-            JOptionPane.showMessageDialog(this, "Rapport généré avec succès :\n" + fichier);
+            ImageIO.write(img, "png", new File(titreFichier + ".png"));
+            JOptionPane.showMessageDialog(this, "Image générée : " + titreFichier + ".png");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erreur lors de la génération du rapport !");
+            JOptionPane.showMessageDialog(this, "Erreur lors de la génération de l'image !");
         }
     }
 
@@ -160,7 +303,6 @@ public class GestionClientsFrame extends JFrame {
                 System.out.println("Erreur lecture clients.txt : " + e.getMessage());
             }
         }
-        // Exemples par défaut si vide
         if (listeClients.isEmpty()) {
             listeClients.add(new Client("C001", "Mohammed Benali", "0661234567", "Casablanca", "001234567890123"));
             listeClients.add(new Client("C002", "SARL ImportExport", "0522888999", "Rabat", "002345678901234"));
@@ -183,159 +325,6 @@ public class GestionClientsFrame extends JFrame {
         for (Client c : listeClients) {
             tableModel.addRow(new Object[]{c.id, c.nom, c.telephone, c.adresse, c.ice});
         }
-    }
-
-    private void initUI() {
-        setTitle("StockSecure - Gestion des Clients");
-        setSize(1100, 750);
-        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        setLocationRelativeTo(null);
-        setLayout(new BorderLayout());
-
-     // === HEADER ===
-        JPanel header = new JPanel(new GridBagLayout());
-        header.setBackground(new Color(0, 102, 204));
-        header.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.gridwidth = GridBagConstraints.REMAINDER;
-
-        // Ligne 1 : Titre + Date live
-        JPanel ligne1 = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 0));
-        ligne1.setOpaque(false);
-
-        JLabel lblTitre = new JLabel("GESTION DES CLIENTS");
-        lblTitre.setFont(new Font("Arial", Font.BOLD, 28));
-        lblTitre.setForeground(Color.WHITE);
-        ligne1.add(lblTitre, BorderLayout.WEST);
-
-        lblDate = new JLabel();
-        lblDate.setFont(new Font("Arial", Font.BOLD, 18));
-        lblDate.setForeground(Color.WHITE);
-        ligne1.add(lblDate, BorderLayout.EAST);
-
-        Timer timer = new Timer(1000, e -> {
-            lblDate.setText("Date : " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()));
-        });
-        timer.start();
-
-        gbc.gridy = 0;
-        header.add(ligne1, gbc);
-
-        // Ligne 2 : Formulaire
-        JPanel form = new JPanel(new GridLayout(3, 5, 20, 15));
-        form.setOpaque(false);
-
-        // ID Client
-        JLabel lblIdLabel = new JLabel("ID Client :");
-        lblIdLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        lblIdLabel.setForeground(Color.WHITE);
-        form.add(lblIdLabel);
-
-        lblId = new JLabel("");
-        lblId.setFont(new Font("Arial", Font.BOLD, 20));
-        lblId.setForeground(Color.YELLOW);
-        form.add(lblId);
-
-        // Nom
-        JLabel lblNomLabel = new JLabel("Nom :");
-        lblNomLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        lblNomLabel.setForeground(Color.WHITE);
-        form.add(lblNomLabel);
-
-        txtNom = new JTextField(25);
-        txtNom.setFont(new Font("Arial", Font.PLAIN, 18));
-        form.add(txtNom);
-
-        // Téléphone
-        JLabel lblTelLabel = new JLabel("Téléphone :");
-        lblTelLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        lblTelLabel.setForeground(Color.WHITE);
-        form.add(lblTelLabel);
-
-        txtTelephone = new JTextField(15);
-        txtTelephone.setFont(new Font("Arial", Font.PLAIN, 18));
-        form.add(txtTelephone);
-
-        // Adresse
-        JLabel lblAdresseLabel = new JLabel("Adresse :");
-        lblAdresseLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        lblAdresseLabel.setForeground(Color.WHITE);
-        form.add(lblAdresseLabel);
-
-        txtAdresse = new JTextField(30);
-        txtAdresse.setFont(new Font("Arial", Font.PLAIN, 18));
-        form.add(txtAdresse);
-
-        // ICE
-        JLabel lblIceLabel = new JLabel("ICE :");
-        lblIceLabel.setFont(new Font("Arial", Font.BOLD, 18));
-        lblIceLabel.setForeground(Color.WHITE);
-        form.add(lblIceLabel);
-
-        txtIce = new JTextField(15);
-        txtIce.setFont(new Font("Arial", Font.PLAIN, 18));
-        form.add(txtIce);
-
-        gbc.gridy = 1;
-        header.add(form, gbc);
-
-        // Boutons
-        JPanel boutons = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        boutons.setOpaque(false);
-
-        JButton btnAjouter = new JButton("AJOUTER CLIENT");
-        btnAjouter.setFont(new Font("Arial", Font.BOLD, 18));
-        btnAjouter.setBackground(new Color(0, 150, 0));
-        btnAjouter.setForeground(Color.WHITE);
-        btnAjouter.addActionListener(e -> ajouterClient());
-
-        JButton btnModifier = new JButton("MODIFIER CLIENT");
-        btnModifier.setFont(new Font("Arial", Font.BOLD, 18));
-        btnModifier.setBackground(new Color(0, 120, 215));
-        btnModifier.setForeground(Color.WHITE);
-        btnModifier.addActionListener(e -> modifierClient());
-
-        JButton btnSupprimer = new JButton("SUPPRIMER CLIENT");
-        btnSupprimer.setFont(new Font("Arial", Font.BOLD, 18));
-        btnSupprimer.setBackground(Color.RED);
-        btnSupprimer.setForeground(Color.WHITE);
-        btnSupprimer.addActionListener(e -> supprimerClient());
-
-        JButton btnVider = new JButton("VIDER CHAMPS");
-        btnVider.setFont(new Font("Arial", Font.BOLD, 18));
-        btnVider.addActionListener(e -> viderChamps());
-        JButton btnImprimer = new JButton("IMPRIMER LISTE");
-        btnImprimer.setFont(new Font("Arial", Font.BOLD, 18));
-        btnImprimer.setBackground(new Color(0, 150, 0));
-        btnImprimer.setForeground(Color.WHITE);
-        btnImprimer.addActionListener(e -> genererImageTableau("Liste_Clients_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())));
-
-        boutons.add(btnImprimer);
-        boutons.add(btnAjouter);
-        boutons.add(btnModifier);
-        boutons.add(btnSupprimer);
-        boutons.add(btnVider);
-
-        gbc.gridy = 2;
-        header.add(boutons, gbc);
-
-        add(header, BorderLayout.NORTH);
-
-        // TABLEAU
-        String[] colonnes = {"ID Client", "Nom", "Téléphone", "Adresse", "ICE"};
-        tableModel = new DefaultTableModel(colonnes, 0);
-        table = new JTable(tableModel);
-        table.setRowHeight(35);
-        table.setFont(new Font("Arial", Font.PLAIN, 16));
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 16));
-        table.getTableHeader().setBackground(new Color(0, 102, 204));
-        table.getTableHeader().setForeground(Color.WHITE);
-        table.getSelectionModel().addListSelectionListener(e -> selectionnerClient());
-        add(new JScrollPane(table), BorderLayout.CENTER);
-
-        setVisible(true);
     }
 
     private void ajouterClient() {
@@ -438,27 +427,6 @@ public class GestionClientsFrame extends JFrame {
         String id, nom, telephone, adresse, ice;
         Client(String i, String n, String t, String a, String ic) {
             id = i; nom = n; telephone = t; adresse = a; ice = ic;
-        }
-    }
-    private void genererImageTableau(String titreFichier) {
-        // Capture simple du tableau
-        JViewport viewport = table.getParent() instanceof JViewport ? (JViewport) table.getParent() : null;
-        Component comp = viewport != null ? viewport : table;
-
-        int width = comp.getWidth();
-        int height = comp.getHeight();
-        BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = img.createGraphics();
-        g.setColor(Color.WHITE);
-        g.fillRect(0, 0, width, height);
-        comp.paint(g);
-        g.dispose();
-
-        try {
-            ImageIO.write(img, "png", new File(titreFichier + ".png"));
-            JOptionPane.showMessageDialog(this, "Image générée : " + titreFichier + ".png");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Erreur lors de la génération de l'image !");
         }
     }
 }
