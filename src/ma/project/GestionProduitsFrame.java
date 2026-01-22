@@ -21,21 +21,22 @@ public class GestionProduitsFrame extends JFrame {
     private JLabel lblRef, lblDate;
     private List<Produit> listeProduits = new ArrayList<>();
 
-    // Constants from DashboardFrame
-    private static final Color PRIMARY_COLOR = new Color(25, 118, 210);
-    private static final Color SECONDARY_COLOR = new Color(48, 63, 159);
-    private static final Color BG_COLOR = new Color(250, 250, 252);
-    private static final Color SUCCESS_COLOR = new Color(56, 142, 60);
-    private static final Color DANGER_COLOR = new Color(211, 47, 47);
-    private static final Color ACCENT_COLOR = new Color(0, 150, 136);
+    // Warm Earth Tone Color Scheme
+    private static final Color PRIMARY_COLOR = new Color(102, 76, 54); // #664C36 Rich Brown
+    private static final Color SECONDARY_COLOR = new Color(51, 28, 8); // #331C08 Dark Brown
+    private static final Color BG_COLOR = new Color(255, 211, 172); // #FFD3AC Light Cream
+    private static final Color SUCCESS_COLOR = new Color(88, 129, 87); // Earthy Green
+    private static final Color DANGER_COLOR = new Color(153, 51, 0); // Warm Red-Brown
+    private static final Color ACCENT_COLOR = new Color(204, 190, 177); // #CCBEB1 Warm Beige
 
     public GestionProduitsFrame() {
         try {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
 
-            initUI(); 
+            initUI();
             chargerProduits();
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -70,36 +71,36 @@ public class GestionProduitsFrame extends JFrame {
         };
         header.setLayout(new GridBagLayout());
         header.setBorder(new EmptyBorder(20, 30, 20, 30));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 15, 10, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        
+
         // -- Title --
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setOpaque(false);
-        
+
         JLabel lblIcon = new JLabel("📦");
         lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 40));
 
         JLabel lblTitre = new JLabel("GESTION DES PRODUITS");
         lblTitre.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitre.setForeground(Color.WHITE);
-        
+
         JPanel textPanel = new JPanel(new BorderLayout());
         textPanel.setOpaque(false);
         textPanel.add(lblTitre, BorderLayout.NORTH);
-        
+
         lblDate = new JLabel();
         lblDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblDate.setForeground(new Color(255, 255, 255, 200));
         textPanel.add(lblDate, BorderLayout.SOUTH);
-        
+
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         leftPanel.setOpaque(false);
         leftPanel.add(lblIcon);
         leftPanel.add(textPanel);
-        
+
         titlePanel.add(leftPanel, BorderLayout.WEST);
 
         Timer timer = new Timer(1000, e -> {
@@ -107,22 +108,26 @@ public class GestionProduitsFrame extends JFrame {
         });
         timer.start();
 
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
         header.add(titlePanel, gbc);
 
         // -- Form --
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setOpaque(false);
         formPanel.setBorder(new EmptyBorder(15, 0, 10, 0));
-        
+
         GridBagConstraints fgbc = new GridBagConstraints();
         fgbc.insets = new Insets(8, 10, 8, 10);
         fgbc.anchor = GridBagConstraints.WEST;
 
         // REF
-        fgbc.gridx = 0; fgbc.gridy = 0;
+        fgbc.gridx = 0;
+        fgbc.gridy = 0;
         formPanel.add(createLabel("Référence :"), fgbc);
-        
+
         lblRef = new JLabel("---");
         lblRef.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblRef.setForeground(new Color(255, 215, 0)); // Gold
@@ -137,19 +142,21 @@ public class GestionProduitsFrame extends JFrame {
         formPanel.add(txtDesignation, fgbc);
 
         // PRIX
-        fgbc.gridx = 0; fgbc.gridy = 1;
+        fgbc.gridx = 0;
+        fgbc.gridy = 1;
         formPanel.add(createLabel("Prix HT (DH) :"), fgbc);
         txtPrixHT = createStyledTextField(10);
         fgbc.gridx = 1;
         formPanel.add(txtPrixHT, fgbc);
 
         // QTE
-        fgbc.gridx = 2; fgbc.gridy = 1;
+        fgbc.gridx = 2;
+        fgbc.gridy = 1;
         formPanel.add(createLabel("Quantité :"), fgbc);
         txtQuantite = createStyledTextField(10);
         fgbc.gridx = 3;
         formPanel.add(txtQuantite, fgbc);
-        
+
         gbc.gridy = 1;
         header.add(formPanel, gbc);
 
@@ -160,7 +167,7 @@ public class GestionProduitsFrame extends JFrame {
 
         JButton btnAdd = createStyledButton("AJOUTER", SUCCESS_COLOR);
         btnAdd.addActionListener(e -> ajouterProduit());
-        
+
         JButton btnEdit = createStyledButton("MODIFIER", PRIMARY_COLOR);
         btnEdit.addActionListener(e -> modifierProduit());
 
@@ -169,9 +176,10 @@ public class GestionProduitsFrame extends JFrame {
 
         JButton btnKlear = createStyledButton("VIDER", new Color(117, 117, 117));
         btnKlear.addActionListener(e -> viderChamps());
-        
+
         JButton btnPrint = createStyledButton("IMPRIMER", new Color(156, 39, 176));
-        btnPrint.addActionListener(e -> genererImageTableau("Liste_Produits_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())));
+        btnPrint.addActionListener(e -> genererImageTableau(
+                "Liste_Produits_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())));
 
         btnPanel.add(btnAdd);
         btnPanel.add(btnEdit);
@@ -185,9 +193,9 @@ public class GestionProduitsFrame extends JFrame {
         add(header, BorderLayout.NORTH);
 
         // === TABLE ===
-        String[] colonnes = {"Référence", "Désignation", "Prix HT (DH)", "Quantité disponible"};
+        String[] colonnes = { "Référence", "Désignation", "Prix HT (DH)", "Quantité disponible" };
         tableModel = new DefaultTableModel(colonnes, 0) {
-             @Override
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
@@ -195,33 +203,34 @@ public class GestionProduitsFrame extends JFrame {
         table = new JTable(tableModel);
         table.setRowHeight(40);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.setSelectionBackground(new Color(PRIMARY_COLOR.getRed(), PRIMARY_COLOR.getGreen(), PRIMARY_COLOR.getBlue(), 50));
+        table.setSelectionBackground(
+                new Color(PRIMARY_COLOR.getRed(), PRIMARY_COLOR.getGreen(), PRIMARY_COLOR.getBlue(), 50));
         table.setSelectionForeground(Color.BLACK);
         table.setShowVerticalLines(false);
         table.setIntercellSpacing(new Dimension(0, 0));
-        
+
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(PRIMARY_COLOR);
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setPreferredSize(new Dimension(100, 45));
-        
+
         table.getSelectionModel().addListSelectionListener(e -> selectionnerProduit());
-        
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new EmptyBorder(20, 20, 20, 20));
         scrollPane.getViewport().setBackground(Color.WHITE);
-        
+
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBackground(BG_COLOR);
         tablePanel.add(scrollPane, BorderLayout.CENTER);
-        
+
         add(tablePanel, BorderLayout.CENTER);
 
         setVisible(true);
     }
-    
+
     // === HELPERS ===
-    
+
     private JLabel createLabel(String text) {
         JLabel lbl = new JLabel(text);
         lbl.setFont(new Font("Segoe UI", Font.BOLD, 14));
@@ -233,8 +242,8 @@ public class GestionProduitsFrame extends JFrame {
         JTextField txt = new JTextField(cols);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txt.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(255, 255, 255, 100), 1), 
-            new EmptyBorder(8, 10, 8, 10)));
+                new LineBorder(new Color(255, 255, 255, 100), 1),
+                new EmptyBorder(8, 10, 8, 10)));
         txt.setBackground(new Color(255, 255, 255, 240));
         return txt;
     }
@@ -248,11 +257,12 @@ public class GestionProduitsFrame extends JFrame {
         btn.setBorderPainted(false);
         btn.setBorder(new EmptyBorder(10, 20, 10, 20));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btn.setBackground(bg.darker());
             }
+
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 btn.setBackground(bg);
             }
@@ -286,9 +296,11 @@ public class GestionProduitsFrame extends JFrame {
         try (BufferedReader br = new BufferedReader(new FileReader("produits.txt"))) {
             String ligne;
             while ((ligne = br.readLine()) != null) {
-                if (ligne.trim().isEmpty()) continue;
+                if (ligne.trim().isEmpty())
+                    continue;
                 String[] p = ligne.split("\\|");
-                if (p.length < 4) continue;
+                if (p.length < 4)
+                    continue;
                 String ref = p[0].trim();
                 String designation = p[1].trim();
                 double prixHT = Double.parseDouble(p[2].trim());
@@ -318,7 +330,7 @@ public class GestionProduitsFrame extends JFrame {
     private void rafraichirTableau() {
         tableModel.setRowCount(0);
         for (Produit p : listeProduits) {
-            tableModel.addRow(new Object[]{p.ref, p.designation, p.prixHT, p.quantite});
+            tableModel.addRow(new Object[] { p.ref, p.designation, p.prixHT, p.quantite });
         }
     }
 
@@ -337,7 +349,8 @@ public class GestionProduitsFrame extends JFrame {
         try {
             prixHT = Double.parseDouble(prixStr);
             quantite = Integer.parseInt(quantiteStr);
-            if (prixHT < 0 || quantite < 0) throw new Exception();
+            if (prixHT < 0 || quantite < 0)
+                throw new Exception();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Prix ou quantité invalide !");
             return;
@@ -375,7 +388,8 @@ public class GestionProduitsFrame extends JFrame {
         try {
             prixHT = Double.parseDouble(prixStr);
             quantite = Integer.parseInt(quantiteStr);
-            if (prixHT < 0 || quantite < 0) throw new Exception();
+            if (prixHT < 0 || quantite < 0)
+                throw new Exception();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Prix ou quantité invalide !");
             return;
@@ -396,7 +410,8 @@ public class GestionProduitsFrame extends JFrame {
         }
 
         String ref = (String) tableModel.getValueAt(row, 0);
-        int confirm = JOptionPane.showConfirmDialog(this, "Supprimer le produit " + ref + " ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Supprimer le produit " + ref + " ?", "Confirmation",
+                JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             listeProduits.removeIf(p -> p.ref.equals(ref));
             rafraichirTableau();
@@ -429,8 +444,10 @@ public class GestionProduitsFrame extends JFrame {
             if (p.ref.startsWith("P")) {
                 try {
                     int num = Integer.parseInt(p.ref.substring(1));
-                    if (num > max) max = num;
-                } catch (Exception ignored) {}
+                    if (num > max)
+                        max = num;
+                } catch (Exception ignored) {
+                }
             }
         }
         return "P" + String.format("%03d", max + 1);
@@ -440,8 +457,12 @@ public class GestionProduitsFrame extends JFrame {
         String ref, designation;
         double prixHT;
         int quantite;
+
         Produit(String r, String d, double p, int q) {
-            ref = r; designation = d; prixHT = p; quantite = q;
+            ref = r;
+            designation = d;
+            prixHT = p;
+            quantite = q;
         }
     }
 }

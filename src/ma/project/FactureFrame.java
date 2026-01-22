@@ -24,20 +24,23 @@ public class FactureFrame extends JFrame {
     private JLabel lblTotal;
     private JLabel lblNumFacture;
     private int numeroFacture = 0;
-    
-    private static final Color PRIMARY_COLOR = new Color(25, 118, 210);
-    private static final Color SUCCESS_COLOR = new Color(56, 142, 60);
-    private static final Color BG_COLOR = new Color(250, 250, 252);
-    private static final Color HEADER_COLOR = new Color(30, 136, 229);
+
+    // Warm Earth Tone Color Scheme
+    private static final Color PRIMARY_COLOR = new Color(102, 76, 54); // #664C36 Rich Brown
+    private static final Color SECONDARY_COLOR = new Color(51, 28, 8); // #331C08 Dark Brown
+    private static final Color SUCCESS_COLOR = new Color(88, 129, 87); // Earthy Green
+    private static final Color BG_COLOR = new Color(255, 211, 172); // #FFD3AC Light Cream
+    private static final Color HEADER_COLOR = new Color(102, 76, 54); // #664C36 Rich Brown
 
     public FactureFrame() {
         chargerDonnees();
         incrementerNumeroFacture();
         initUI();
-     // Chargement de l'icône de l'application
+        // Chargement de l'icône de l'application
         try {
             ImageIcon icon = new ImageIcon(getClass().getResource("/ma/project/Design sans titre.png"));
-            // Ou si tu l'as mis directement dans src : new ImageIcon("Design sans titre.png")
+            // Ou si tu l'as mis directement dans src : new ImageIcon("Design sans
+            // titre.png")
             setIconImage(icon.getImage());
         } catch (Exception e) {
             // Si l'icône n'est pas trouvée, on continue sans
@@ -56,6 +59,7 @@ public class FactureFrame extends JFrame {
         produits.put("P404", new Produit("Laptop Dell XPS", 15000.00));
         produits.put("P505", new Produit("Pack eau 12x1.5L", 54.00));
     }
+
     private void incrementerNumeroFacture() {
         try (BufferedReader br = new BufferedReader(new FileReader("compteur.txt"))) {
             numeroFacture = Integer.parseInt(br.readLine().trim());
@@ -65,7 +69,8 @@ public class FactureFrame extends JFrame {
         numeroFacture++;
         try (PrintWriter pw = new PrintWriter("compteur.txt")) {
             pw.println(numeroFacture);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private void initUI() {
@@ -171,9 +176,8 @@ public class FactureFrame extends JFrame {
         JTextField field = new JTextField();
         field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         field.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(255, 255, 255, 100), 1),
-            new EmptyBorder(10, 12, 10, 12)
-        ));
+                new LineBorder(new Color(255, 255, 255, 100), 1),
+                new EmptyBorder(10, 12, 10, 12)));
         field.setBackground(new Color(255, 255, 255, 240));
         field.setOpaque(true);
         return field;
@@ -184,21 +188,22 @@ public class FactureFrame extends JFrame {
         panel.setBackground(BG_COLOR);
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        tableModel = new DefaultTableModel(new String[]{"Produit", "PU HT", "Qté", "Total HT"}, 0) {
+        tableModel = new DefaultTableModel(new String[] { "Produit", "PU HT", "Qté", "Total HT" }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        
+
         JTable table = new JTable(tableModel);
         table.setRowHeight(45);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.setSelectionBackground(new Color(PRIMARY_COLOR.getRed(), PRIMARY_COLOR.getGreen(), PRIMARY_COLOR.getBlue(), 50));
+        table.setSelectionBackground(
+                new Color(PRIMARY_COLOR.getRed(), PRIMARY_COLOR.getGreen(), PRIMARY_COLOR.getBlue(), 50));
         table.setGridColor(new Color(230, 230, 230));
         table.setShowGrid(true);
         table.setIntercellSpacing(new Dimension(0, 0));
-        
+
         // Header du tableau
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         table.getTableHeader().setBackground(PRIMARY_COLOR);
@@ -208,7 +213,7 @@ public class FactureFrame extends JFrame {
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new LineBorder(new Color(220, 220, 220), 1));
         scrollPane.setBackground(BG_COLOR);
-        
+
         panel.add(scrollPane, BorderLayout.CENTER);
         return panel;
     }
@@ -230,9 +235,8 @@ public class FactureFrame extends JFrame {
         txtQuantite = new JTextField("1", 8);
         txtQuantite.setFont(new Font("Segoe UI", Font.BOLD, 16));
         txtQuantite.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(PRIMARY_COLOR, 2),
-            new EmptyBorder(8, 12, 8, 12)
-        ));
+                new LineBorder(PRIMARY_COLOR, 2),
+                new EmptyBorder(8, 12, 8, 12)));
         txtQuantite.addActionListener(e -> ajouterProduit());
 
         JButton btnAjouter = createStyledButton("➕ AJOUTER PRODUIT", PRIMARY_COLOR);
@@ -249,9 +253,8 @@ public class FactureFrame extends JFrame {
         JPanel totalPanel = new JPanel(new BorderLayout());
         totalPanel.setBackground(BG_COLOR);
         totalPanel.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(SUCCESS_COLOR, 2, true),
-            new EmptyBorder(15, 20, 15, 20)
-        ));
+                new LineBorder(SUCCESS_COLOR, 2, true),
+                new EmptyBorder(15, 20, 15, 20)));
 
         lblTotal = new JLabel("TOTAL TTC : 0.00 DH");
         lblTotal.setFont(new Font("Segoe UI", Font.BOLD, 28));
@@ -279,19 +282,19 @@ public class FactureFrame extends JFrame {
         btn.setBorderPainted(false);
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
         btn.setBorder(new EmptyBorder(10, 20, 10, 20));
-        
+
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
             public void mouseEntered(java.awt.event.MouseEvent e) {
                 btn.setBackground(color.darker());
             }
-            
+
             @Override
             public void mouseExited(java.awt.event.MouseEvent e) {
                 btn.setBackground(color);
             }
         });
-        
+
         return btn;
     }
 
@@ -312,18 +315,22 @@ public class FactureFrame extends JFrame {
         String ref = txtRefProduit.getText().toUpperCase().trim();
         Produit p = produits.get(ref);
         if (p == null) {
-            JOptionPane.showMessageDialog(this, "❌ Produit non trouvé !\nRéférences disponibles: P101, P202, P303, P404, P505", 
-                "Erreur", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "❌ Produit non trouvé !\nRéférences disponibles: P101, P202, P303, P404, P505",
+                    "Erreur", JOptionPane.ERROR_MESSAGE);
             return;
         }
         int qte = 1;
-        try { 
-            qte = Integer.parseInt(txtQuantite.getText()); 
-        } catch (Exception ignored) {}
-        if (qte < 1) qte = 1;
+        try {
+            qte = Integer.parseInt(txtQuantite.getText());
+        } catch (Exception ignored) {
+        }
+        if (qte < 1)
+            qte = 1;
 
         double totalLigne = p.prixHT * qte;
-        tableModel.addRow(new Object[]{p.nom, String.format("%.2f", p.prixHT), qte, String.format("%.2f", totalLigne)});
+        tableModel.addRow(
+                new Object[] { p.nom, String.format("%.2f", p.prixHT), qte, String.format("%.2f", totalLigne) });
 
         // Calculer le total TTC
         double totalHT = 0;
@@ -356,11 +363,11 @@ public class FactureFrame extends JFrame {
             g.drawString("StockSecure Maroc", 220, 180);
         }
 
-        lblNumFacture = new JLabel("Facture N° F" + new SimpleDateFormat("yyyy").format(new Date()) + "-" + String.format("%04d", numeroFacture));
+        lblNumFacture = new JLabel("Facture N° F" + new SimpleDateFormat("yyyy").format(new Date()) + "-"
+                + String.format("%04d", numeroFacture));
         lblNumFacture.setFont(new Font("Arial", Font.BOLD, 24));
         lblNumFacture.setForeground(Color.WHITE);
-        
-        
+
         g.drawString(lblNumFacture.getText(), 50, 280);
         g.drawString("Client : " + lblClient.getText(), 50, 310);
         g.drawString("Date : " + new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date()), 50, 340);
@@ -392,6 +399,10 @@ public class FactureFrame extends JFrame {
     class Produit {
         String nom;
         double prixHT;
-        Produit(String n, double p) { nom = n; prixHT = p; }
+
+        Produit(String n, double p) {
+            nom = n;
+            prixHT = p;
+        }
     }
 }

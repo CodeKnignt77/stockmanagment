@@ -20,26 +20,27 @@ public class GestionClientsFrame extends JFrame {
     private JTextField txtNom, txtTelephone, txtAdresse, txtIce;
     private JLabel lblId, lblDate;
     private List<Client> listeClients = new ArrayList<>();
-    
-    // Constants from DashboardFrame
-    private static final Color PRIMARY_COLOR = new Color(25, 118, 210);
-    private static final Color SECONDARY_COLOR = new Color(48, 63, 159);
-    private static final Color BG_COLOR = new Color(250, 250, 252);
-    private static final Color SUCCESS_COLOR = new Color(56, 142, 60);
-    private static final Color DANGER_COLOR = new Color(211, 47, 47);
+
+    // Warm Earth Tone Color Scheme
+    private static final Color PRIMARY_COLOR = new Color(102, 76, 54); // #664C36 Rich Brown
+    private static final Color SECONDARY_COLOR = new Color(51, 28, 8); // #331C08 Dark Brown
+    private static final Color BG_COLOR = new Color(255, 211, 172); // #FFD3AC Light Cream
+    private static final Color SUCCESS_COLOR = new Color(88, 129, 87); // Earthy Green
+    private static final Color DANGER_COLOR = new Color(153, 51, 0); // Warm Red-Brown
 
     public GestionClientsFrame() {
         try {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ignored) {}
-            
+            } catch (Exception ignored) {
+            }
+
             initUI();
             chargerClients();
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-    
+
         try {
             ImageIcon icon = new ImageIcon(getClass().getResource("/ma/project/Design sans titre.png"));
             setIconImage(icon.getImage());
@@ -69,36 +70,36 @@ public class GestionClientsFrame extends JFrame {
         };
         header.setLayout(new GridBagLayout());
         header.setBorder(new EmptyBorder(20, 30, 20, 30));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 15, 10, 15);
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        
+
         // -- Title Section --
         JPanel titlePanel = new JPanel(new BorderLayout());
         titlePanel.setOpaque(false);
-        
+
         JLabel lblIcon = new JLabel("👥");
         lblIcon.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 40));
-        
+
         JLabel lblTitre = new JLabel("GESTION DES CLIENTS");
         lblTitre.setFont(new Font("Segoe UI", Font.BOLD, 28));
         lblTitre.setForeground(Color.WHITE);
-        
+
         JPanel textPanel = new JPanel(new BorderLayout());
         textPanel.setOpaque(false);
         textPanel.add(lblTitre, BorderLayout.NORTH);
-        
+
         lblDate = new JLabel();
         lblDate.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         lblDate.setForeground(new Color(255, 255, 255, 200));
         textPanel.add(lblDate, BorderLayout.SOUTH);
-        
+
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 0));
         leftPanel.setOpaque(false);
         leftPanel.add(lblIcon);
         leftPanel.add(textPanel);
-        
+
         titlePanel.add(leftPanel, BorderLayout.WEST);
 
         Timer timer = new Timer(1000, e -> {
@@ -106,34 +107,38 @@ public class GestionClientsFrame extends JFrame {
         });
         timer.start();
 
-        gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2; gbc.weightx = 1.0;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.weightx = 1.0;
         header.add(titlePanel, gbc);
 
         // -- Form Section --
         JPanel formPanel = new JPanel(new GridBagLayout());
         formPanel.setOpaque(false);
         formPanel.setBorder(new EmptyBorder(15, 0, 10, 0));
-        
+
         GridBagConstraints fgbc = new GridBagConstraints();
         fgbc.insets = new Insets(8, 10, 8, 10);
         fgbc.anchor = GridBagConstraints.WEST;
-        
+
         // Row 1
-        fgbc.gridx = 0; fgbc.gridy = 0;
+        fgbc.gridx = 0;
+        fgbc.gridy = 0;
         formPanel.add(createLabel("ID Client :"), fgbc);
-        
+
         lblId = new JLabel("---");
         lblId.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblId.setForeground(new Color(255, 215, 0)); // Gold
-        fgbc.gridx = 1; 
+        fgbc.gridx = 1;
         formPanel.add(lblId, fgbc);
-        
+
         fgbc.gridx = 2;
-        formPanel.add(createLabel("Nom complet :"), fgbc);       
+        formPanel.add(createLabel("Nom complet :"), fgbc);
         txtNom = createStyledTextField(20);
         fgbc.gridx = 3;
         formPanel.add(txtNom, fgbc);
-        
+
         fgbc.gridx = 4;
         formPanel.add(createLabel("Téléphone :"), fgbc);
         txtTelephone = createStyledTextField(15);
@@ -141,13 +146,17 @@ public class GestionClientsFrame extends JFrame {
         formPanel.add(txtTelephone, fgbc);
 
         // Row 2
-        fgbc.gridx = 0; fgbc.gridy = 1;
+        fgbc.gridx = 0;
+        fgbc.gridy = 1;
         formPanel.add(createLabel("Adresse :"), fgbc);
         txtAdresse = createStyledTextField(20);
-        fgbc.gridx = 1; fgbc.gridwidth = 3; fgbc.fill = GridBagConstraints.HORIZONTAL;
+        fgbc.gridx = 1;
+        fgbc.gridwidth = 3;
+        fgbc.fill = GridBagConstraints.HORIZONTAL;
         formPanel.add(txtAdresse, fgbc);
-        fgbc.fill = GridBagConstraints.NONE; fgbc.gridwidth = 1; 
-        
+        fgbc.fill = GridBagConstraints.NONE;
+        fgbc.gridwidth = 1;
+
         fgbc.gridx = 4;
         formPanel.add(createLabel("ICE :"), fgbc);
         txtIce = createStyledTextField(15);
@@ -164,7 +173,7 @@ public class GestionClientsFrame extends JFrame {
 
         JButton btnAdd = createStyledButton("AJOUTER", SUCCESS_COLOR);
         btnAdd.addActionListener(e -> ajouterClient());
-        
+
         JButton btnEdit = createStyledButton("MODIFIER", PRIMARY_COLOR);
         btnEdit.addActionListener(e -> modifierClient());
 
@@ -173,9 +182,10 @@ public class GestionClientsFrame extends JFrame {
 
         JButton btnKlear = createStyledButton("VIDER", new Color(117, 117, 117)); // Grey
         btnKlear.addActionListener(e -> viderChamps());
-        
+
         JButton btnPrint = createStyledButton("IMPRIMER", new Color(156, 39, 176)); // Purple
-        btnPrint.addActionListener(e -> genererImageTableau("Liste_Clients_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())));
+        btnPrint.addActionListener(e -> genererImageTableau(
+                "Liste_Clients_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())));
 
         btnPanel.add(btnAdd);
         btnPanel.add(btnEdit);
@@ -189,42 +199,43 @@ public class GestionClientsFrame extends JFrame {
         add(header, BorderLayout.NORTH);
 
         // === TABLE SECTION ===
-        String[] columns = {"ID Client", "Nom", "Téléphone", "Adresse", "ICE"};
+        String[] columns = { "ID Client", "Nom", "Téléphone", "Adresse", "ICE" };
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        
+
         table = new JTable(tableModel);
         table.setRowHeight(40);
         table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        table.setSelectionBackground(new Color(PRIMARY_COLOR.getRed(), PRIMARY_COLOR.getGreen(), PRIMARY_COLOR.getBlue(), 50));
+        table.setSelectionBackground(
+                new Color(PRIMARY_COLOR.getRed(), PRIMARY_COLOR.getGreen(), PRIMARY_COLOR.getBlue(), 50));
         table.setSelectionForeground(Color.BLACK);
         table.setShowVerticalLines(false);
         table.setIntercellSpacing(new Dimension(0, 0));
-        
+
         table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
         table.getTableHeader().setBackground(PRIMARY_COLOR);
         table.getTableHeader().setForeground(Color.WHITE);
         table.getTableHeader().setPreferredSize(new Dimension(100, 45));
-        
+
         table.getSelectionModel().addListSelectionListener(e -> selectionnerClient());
-        
+
         JScrollPane scrollPane = new JScrollPane(table);
         scrollPane.setBorder(new EmptyBorder(20, 20, 20, 20));
         scrollPane.getViewport().setBackground(Color.WHITE);
-        
+
         JPanel tablePanel = new JPanel(new BorderLayout());
         tablePanel.setBackground(BG_COLOR);
         tablePanel.add(scrollPane, BorderLayout.CENTER);
-        
+
         add(tablePanel, BorderLayout.CENTER);
-        
+
         setVisible(true);
     }
-    
+
     // === HELPER METHODS ===
 
     private JLabel createLabel(String text) {
@@ -238,8 +249,8 @@ public class GestionClientsFrame extends JFrame {
         JTextField txt = new JTextField(cols);
         txt.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         txt.setBorder(BorderFactory.createCompoundBorder(
-            new LineBorder(new Color(255, 255, 255, 100), 1), 
-            new EmptyBorder(8, 10, 8, 10)));
+                new LineBorder(new Color(255, 255, 255, 100), 1),
+                new EmptyBorder(8, 10, 8, 10)));
         txt.setBackground(new Color(255, 255, 255, 240));
         return txt;
     }
@@ -253,11 +264,12 @@ public class GestionClientsFrame extends JFrame {
         btn.setBorderPainted(false);
         btn.setBorder(new EmptyBorder(10, 20, 10, 20));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        
+
         btn.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 btn.setBackground(bg.darker());
             }
+
             public void mouseExited(java.awt.event.MouseEvent evt) {
                 btn.setBackground(bg);
             }
@@ -293,7 +305,8 @@ public class GestionClientsFrame extends JFrame {
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
                 String ligne;
                 while ((ligne = br.readLine()) != null) {
-                    if (ligne.trim().isEmpty()) continue;
+                    if (ligne.trim().isEmpty())
+                        continue;
                     String[] p = ligne.split("\\|");
                     if (p.length >= 5) {
                         listeClients.add(new Client(p[0].trim(), p[1].trim(), p[2].trim(), p[3].trim(), p[4].trim()));
@@ -323,7 +336,7 @@ public class GestionClientsFrame extends JFrame {
     private void rafraichirTableau() {
         tableModel.setRowCount(0);
         for (Client c : listeClients) {
-            tableModel.addRow(new Object[]{c.id, c.nom, c.telephone, c.adresse, c.ice});
+            tableModel.addRow(new Object[] { c.id, c.nom, c.telephone, c.adresse, c.ice });
         }
     }
 
@@ -381,7 +394,8 @@ public class GestionClientsFrame extends JFrame {
         }
 
         String id = (String) tableModel.getValueAt(row, 0);
-        int confirm = JOptionPane.showConfirmDialog(this, "Supprimer le client " + id + " ?", "Confirmation", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "Supprimer le client " + id + " ?", "Confirmation",
+                JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             listeClients.removeIf(c -> c.id.equals(id));
             rafraichirTableau();
@@ -416,8 +430,10 @@ public class GestionClientsFrame extends JFrame {
             if (c.id.startsWith("C")) {
                 try {
                     int num = Integer.parseInt(c.id.substring(1));
-                    if (num > max) max = num;
-                } catch (Exception ignored) {}
+                    if (num > max)
+                        max = num;
+                } catch (Exception ignored) {
+                }
             }
         }
         return "C" + String.format("%03d", max + 1);
@@ -425,8 +441,13 @@ public class GestionClientsFrame extends JFrame {
 
     class Client {
         String id, nom, telephone, adresse, ice;
+
         Client(String i, String n, String t, String a, String ic) {
-            id = i; nom = n; telephone = t; adresse = a; ice = ic;
+            id = i;
+            nom = n;
+            telephone = t;
+            adresse = a;
+            ice = ic;
         }
     }
 }
